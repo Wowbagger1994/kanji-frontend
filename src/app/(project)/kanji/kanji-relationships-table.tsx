@@ -25,19 +25,13 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function KanjiRelationshipTable<TData, TValue>({
 	columns,
 	data,
 }: DataTableProps<TData, TValue>) {
@@ -46,6 +40,10 @@ export function DataTable<TData, TValue>({
 		React.useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
+	const [pagination, setPagination] = React.useState({
+		pageIndex: 0, //default page index
+		pageSize: 100, //default page size
+	});
 
 	const table = useReactTable({
 		data,
@@ -57,43 +55,17 @@ export function DataTable<TData, TValue>({
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
 		onColumnVisibilityChange: setColumnVisibility,
+		onPaginationChange: setPagination,
 		state: {
 			sorting,
 			columnFilters,
 			columnVisibility,
+			pagination,
 		},
 	});
 
 	return (
 		<div>
-			<div className="flex items-center py-4">
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="ml-auto">
-							Columns
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{table
-							.getAllColumns()
-							.filter((column) => column.getCanHide())
-							.map((column) => {
-								return (
-									<DropdownMenuCheckboxItem
-										key={column.id}
-										className="capitalize"
-										checked={column.getIsVisible()}
-										onCheckedChange={(value) =>
-											column.toggleVisibility(!!value)
-										}
-									>
-										{column.id}
-									</DropdownMenuCheckboxItem>
-								);
-							})}
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</div>
 			<div className="rounded-md border">
 				<Table>
 					<TableHeader>
@@ -102,13 +74,14 @@ export function DataTable<TData, TValue>({
 								{headerGroup.headers.map((header) => {
 									return (
 										<TableHead key={header.id}>
-											{header.id === "literal" ? (
+											{header.id ===
+											"kanji_result_literal" ? (
 												<Input
 													placeholder="Filter kanji..."
 													value={
 														(table
 															.getColumn(
-																"literal"
+																"kanji_result_literal"
 															)
 															?.getFilterValue() as string) ??
 														""
@@ -116,7 +89,55 @@ export function DataTable<TData, TValue>({
 													onChange={(event) =>
 														table
 															.getColumn(
-																"literal"
+																"kanji_result_literal"
+															)
+															?.setFilterValue(
+																event.target
+																	.value
+															)
+													}
+													className="max-w-sm"
+												/>
+											) : null}
+											{header.id === "kanji1_literal" ? (
+												<Input
+													placeholder="Filter kanji..."
+													value={
+														(table
+															.getColumn(
+																"kanji1_literal"
+															)
+															?.getFilterValue() as string) ??
+														""
+													}
+													onChange={(event) =>
+														table
+															.getColumn(
+																"kanji1_literal"
+															)
+															?.setFilterValue(
+																event.target
+																	.value
+															)
+													}
+													className="max-w-sm"
+												/>
+											) : null}
+											{header.id === "kanji2_literal" ? (
+												<Input
+													placeholder="Filter kanji..."
+													value={
+														(table
+															.getColumn(
+																"kanji2_literal"
+															)
+															?.getFilterValue() as string) ??
+														""
+													}
+													onChange={(event) =>
+														table
+															.getColumn(
+																"kanji2_literal"
 															)
 															?.setFilterValue(
 																event.target
@@ -180,6 +201,15 @@ export function DataTable<TData, TValue>({
 				>
 					Previous
 				</Button>
+				<span>
+					<div>
+						Page{" "}
+						<strong>
+							{pagination.pageIndex + 1} of {table.getPageCount()}
+						</strong>
+					</div>
+					Total: {" " + data.length}
+				</span>
 				<Button
 					variant="outline"
 					size="sm"

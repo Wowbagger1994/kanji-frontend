@@ -1,4 +1,4 @@
-"use strict";
+"use client";
 
 var KanjivgAnimate = (function () {
 	function KanjivgAnimate(trigger, time) {
@@ -14,6 +14,7 @@ var KanjivgAnimate = (function () {
 	 * @param {int} time
 	 */
 	KanjivgAnimate.prototype.setOnClick = function setOnClick(trigger, time) {
+		if (!document) return;
 		var triggers = document.querySelectorAll(trigger);
 
 		var length = triggers.length;
@@ -23,7 +24,6 @@ var KanjivgAnimate = (function () {
 		for (var i = 0; i < length; i++) {
 			triggers[i].onclick = function () {
 				var animate = new KVGAnimator(time);
-				debugger;
 				animate.play(this);
 
 				return false;
